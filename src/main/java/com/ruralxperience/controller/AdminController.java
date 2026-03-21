@@ -7,14 +7,16 @@ import com.ruralxperience.dto.response.PageResponse;
 import com.ruralxperience.dto.response.UserResponse;
 import com.ruralxperience.entity.AuditLog;
 import com.ruralxperience.entity.User;
+import com.ruralxperience.enums.ActionType;
 import com.ruralxperience.enums.ExperienceStatus;
 import com.ruralxperience.enums.Role;
 import com.ruralxperience.exception.ResourceNotFoundException;
 import com.ruralxperience.mapper.UserMapper;
 import com.ruralxperience.repository.AuditLogRepository;
 import com.ruralxperience.repository.UserRepository;
-import com.ruralxperience.service.BookingService;
+import com.ruralxperience.service.AuditLogService;
 import com.ruralxperience.service.ExperienceService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +38,7 @@ public class AdminController {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AuditLogRepository auditLogRepository;
+    private final AuditLogService auditLogService;
 
     // Experience moderation
     @GetMapping("/experiences/pending")
@@ -58,9 +61,27 @@ public class AdminController {
         experienceService.reject(id, body.get("reason"));
     }
 
-    @GetMapping("/moderation")
-    public void moderation(@Valid ModerationAction request, @AuthenticationPrincipal User user) {
+    @PostMapping("/experiences/moderate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void moderation(
+            @Valid @RequestBody ModerationAction request,
+            @AuthenticationPrincipal User admin,
+            HttpServletRequest httpRequest) {
 
+        switch (ActionType.valueOf(request.action().toUpperCase())) {
+            case APPROVE -> {
+                experienceService.approve(request.experienceId());
+                auditLogService.log(admin.getId(), admin.getEmail(),
+                        "EXPERIENCE_APPROVED", "Experience", request.experienceId(),
+                        "Approved via moderation panel", httpRequest.getRemoteAddr());
+            }
+            case REJECT -> {
+                experienceService.reject(request.experienceId(), request.reason());
+                auditLogService.log(admin.getId(), admin.getEmail(),
+                        "EXPERIENCE_REJECTED", "Experience", request.experienceId(),
+                        request.reason(), httpRequest.getRemoteAddr());
+            }
+        }
     }
 
     // User management

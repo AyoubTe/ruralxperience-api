@@ -2,7 +2,6 @@ package com.ruralxperience.service;
 
 import com.ruralxperience.entity.AuditLog;
 import com.ruralxperience.repository.AuditLogRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
