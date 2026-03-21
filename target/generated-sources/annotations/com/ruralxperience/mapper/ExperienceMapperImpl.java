@@ -21,8 +21,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-21T14:45:36+0100",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 21.0.7 (Oracle Corporation)"
+    date = "2026-03-21T23:39:49+0100",
+    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.45.0.v20260224-0835, environment: Java 21.0.10 (Eclipse Adoptium)"
 )
 @Component
 public class ExperienceMapperImpl implements ExperienceMapper {
@@ -149,15 +149,15 @@ public class ExperienceMapperImpl implements ExperienceMapper {
 
         Experience.ExperienceBuilder experience = Experience.builder();
 
-        experience.title( request.title() );
-        experience.shortDescription( request.shortDescription() );
-        experience.fullDescription( request.fullDescription() );
-        experience.pricePerPerson( request.pricePerPerson() );
         experience.durationDays( request.durationDays() );
-        experience.maxGuests( request.maxGuests() );
-        experience.location( request.location() );
+        experience.fullDescription( request.fullDescription() );
         experience.latitude( request.latitude() );
+        experience.location( request.location() );
         experience.longitude( request.longitude() );
+        experience.maxGuests( request.maxGuests() );
+        experience.pricePerPerson( request.pricePerPerson() );
+        experience.shortDescription( request.shortDescription() );
+        experience.title( request.title() );
 
         return experience.build();
     }
@@ -168,32 +168,32 @@ public class ExperienceMapperImpl implements ExperienceMapper {
             return;
         }
 
-        if ( request.title() != null ) {
-            experience.setTitle( request.title() );
-        }
-        if ( request.shortDescription() != null ) {
-            experience.setShortDescription( request.shortDescription() );
+        if ( request.durationDays() != null ) {
+            experience.setDurationDays( request.durationDays() );
         }
         if ( request.fullDescription() != null ) {
             experience.setFullDescription( request.fullDescription() );
         }
-        if ( request.pricePerPerson() != null ) {
-            experience.setPricePerPerson( request.pricePerPerson() );
-        }
-        if ( request.durationDays() != null ) {
-            experience.setDurationDays( request.durationDays() );
-        }
-        if ( request.maxGuests() != null ) {
-            experience.setMaxGuests( request.maxGuests() );
+        if ( request.latitude() != null ) {
+            experience.setLatitude( request.latitude() );
         }
         if ( request.location() != null ) {
             experience.setLocation( request.location() );
         }
-        if ( request.latitude() != null ) {
-            experience.setLatitude( request.latitude() );
-        }
         if ( request.longitude() != null ) {
             experience.setLongitude( request.longitude() );
+        }
+        if ( request.maxGuests() != null ) {
+            experience.setMaxGuests( request.maxGuests() );
+        }
+        if ( request.pricePerPerson() != null ) {
+            experience.setPricePerPerson( request.pricePerPerson() );
+        }
+        if ( request.shortDescription() != null ) {
+            experience.setShortDescription( request.shortDescription() );
+        }
+        if ( request.title() != null ) {
+            experience.setTitle( request.title() );
         }
     }
 
