@@ -1,15 +1,13 @@
 package com.ruralxperience.service;
 
 import com.ruralxperience.dto.request.CreateExperienceRequest;
-import com.ruralxperience.dto.response.ExperienceResponse;
-import com.ruralxperience.dto.response.ExperienceSummaryResponse;
-import com.ruralxperience.dto.response.PageResponse;
-import com.ruralxperience.dto.response.PhotoResponse;
+import com.ruralxperience.dto.response.*;
 import com.ruralxperience.entity.*;
 import com.ruralxperience.enums.ExperienceStatus;
 import com.ruralxperience.exception.ForbiddenException;
 import com.ruralxperience.exception.ResourceNotFoundException;
 import com.ruralxperience.mapper.ExperienceMapper;
+import com.ruralxperience.mapper.HostProfileMapper;
 import com.ruralxperience.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -36,6 +34,7 @@ public class ExperienceService {
     private final HostProfileRepository hostProfileRepository;
     private final ExperienceMapper experienceMapper;
     private final StorageService storageService;
+    private final HostProfileMapper hostProfileMapper;
 
     @Transactional(readOnly = true)
     public PageResponse<ExperienceSummaryResponse> search(
@@ -267,5 +266,12 @@ public class ExperienceService {
         exp.setStatus(ExperienceStatus.valueOf(status.toUpperCase()));
         Experience saved = experienceRepository.save(exp);
         return experienceMapper.toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public HostProfileResponse getHostExperience(Long experienceId){
+        HostProfile host = experienceRepository.findHostByExperienceId(experienceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Host for experience", experienceId));
+        return hostProfileMapper.toResponse(host);
     }
 }

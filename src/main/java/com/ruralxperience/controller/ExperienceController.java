@@ -1,10 +1,7 @@
 package com.ruralxperience.controller;
 
 import com.ruralxperience.dto.request.CreateExperienceRequest;
-import com.ruralxperience.dto.response.ExperienceResponse;
-import com.ruralxperience.dto.response.ExperienceSummaryResponse;
-import com.ruralxperience.dto.response.PageResponse;
-import com.ruralxperience.dto.response.PhotoResponse;
+import com.ruralxperience.dto.response.*;
 import com.ruralxperience.entity.ExperiencePhoto;
 import com.ruralxperience.entity.User;
 import com.ruralxperience.service.ExperienceService;
@@ -152,5 +149,10 @@ public class ExperienceController {
                             @PathVariable Long photoId,
                             @AuthenticationPrincipal User user) {
         experienceService.deletePhoto(expId, photoId, user.getId());
+    }
+
+    @GetMapping("/{experienceId}/host")
+    public HostProfileResponse getHostExperience(@PathVariable Long experienceId) {
+        return experienceService.getHostExperience(experienceId);
     }
 }

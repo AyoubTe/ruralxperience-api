@@ -1,6 +1,7 @@
 package com.ruralxperience.repository;
 
 import com.ruralxperience.entity.Experience;
+import com.ruralxperience.entity.HostProfile;
 import com.ruralxperience.enums.ExperienceStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,4 +40,9 @@ public interface ExperienceRepository extends JpaRepository<Experience, Long>,
                       @Param("count") Integer count);
 
     long countByStatus(ExperienceStatus status);
+
+    @Query("SELECT hp FROM HostProfile hp " +
+            "JOIN FETCH hp.user " +
+            "WHERE hp.id = (SELECT e.host.id FROM Experience e WHERE e.id = :experienceId)")
+    Optional<HostProfile> findHostByExperienceId(@Param("experienceId") Long experienceId);
 }
