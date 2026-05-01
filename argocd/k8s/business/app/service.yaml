@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: rxp-app-svc
+  name: rxp-api-svc
   namespace: ruralxperience
 spec:
   selector:
-    app: rxp-app
+    app: rxp-api
   ports:
     - port: 8080
       targetPort: 8080

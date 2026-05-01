@@ -4,19 +4,19 @@ metadata:
   name: rxp-api
   namespace: ruralxperience
   labels:
-    app: rxp-app
+    app: rxp-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rxp-app
+      app: rxp-api
   template:
     metadata:
       labels:
-        app: rxp-app
+        app: rxp-api
     spec:
       containers:
-        - name: rxp-app
+        - name: rxp-api
           image: ayoubtec/rxp-api:1.0
           imagePullPolicy: Always
           ports:
