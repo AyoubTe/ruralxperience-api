@@ -22,6 +22,9 @@ RUN groupadd --system rxp_users && useradd --system --gid rxp_users rxp_user
 
 WORKDIR /app
 
+RUN mkdir -p /app/uploads && \
+    chown -R rxp_user:rxp_users /app
+
 COPY --from=builder --chown=rxp_user:rxp_users /app/target/extracted/dependencies/ ./
 COPY --from=builder --chown=rxp_user:rxp_users /app/target/extracted/spring-boot-loader/ ./
 COPY --from=builder --chown=rxp_user:rxp_users /app/target/extracted/snapshot-dependencies/ ./
