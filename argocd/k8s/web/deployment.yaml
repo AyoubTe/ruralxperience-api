@@ -18,6 +18,19 @@ spec:
       containers:
         - name: rxp-web
           image: ayoubtec/rxp-web:1.0
+          env:
+            - name: API_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: rxp-config
+                  key: RXP_API_BASE_URL
+            - name: WS_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: rxp-config
+                  key: RXP_WS_BASE_URL
+            - name: APP_VERSION
+              value: "1.0"
           ports:
             - containerPort: 80
           readinessProbe:
