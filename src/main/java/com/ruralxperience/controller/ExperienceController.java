@@ -1,8 +1,11 @@
 package com.ruralxperience.controller;
 
 import com.ruralxperience.dto.request.CreateExperienceRequest;
-import com.ruralxperience.dto.response.*;
-import com.ruralxperience.entity.ExperiencePhoto;
+import com.ruralxperience.dto.response.ExperienceResponse;
+import com.ruralxperience.dto.response.ExperienceSummaryResponse;
+import com.ruralxperience.dto.response.HostProfileResponse;
+import com.ruralxperience.dto.response.PageResponse;
+import com.ruralxperience.dto.response.PhotoResponse;
 import com.ruralxperience.entity.User;
 import com.ruralxperience.service.ExperienceService;
 import jakarta.validation.Valid;
@@ -12,8 +15,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -82,11 +97,12 @@ public class ExperienceController {
     }
 
     // Host endpoints
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ExperienceResponse create(@Valid @RequestBody CreateExperienceRequest request,
+                                     @RequestPart("files") List<MultipartFile> files,
                                      @AuthenticationPrincipal User user) {
-        return experienceService.create(request, user.getId());
+        return experienceService.create(request, user.getId(), files);
     }
 
     @PutMapping("/{id}")
@@ -128,12 +144,21 @@ public class ExperienceController {
         return experienceService.getById(id).photos();
     }
 
-    @PostMapping("/{id}/photos")
+    @PostMapping("/{id}/photo")
     @ResponseStatus(HttpStatus.CREATED)
     public PhotoResponse uploadPhoto(@PathVariable Long id,
                                      @RequestParam("file") MultipartFile file,
                                      @AuthenticationPrincipal User user) {
         return experienceService.uploadPhoto(id, file, user.getId());
+    }
+
+    @PostMapping("/{id}/photos")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<PhotoResponse> uploadPhotos(@PathVariable Long id,
+                                            @RequestParam("files") List<MultipartFile> files,
+                                            @AuthenticationPrincipal User user) {
+        // We now return a List<PhotoResponse> instead of a single one
+        return experienceService.uploadPhotos(id, files, user.getId());
     }
 
     @PutMapping("/{id}/photos/reorder")

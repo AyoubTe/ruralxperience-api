@@ -1,26 +1,40 @@
 package com.ruralxperience.service;
 
 import com.ruralxperience.dto.request.CreateExperienceRequest;
-import com.ruralxperience.dto.response.*;
-import com.ruralxperience.entity.*;
+import com.ruralxperience.dto.response.ExperienceResponse;
+import com.ruralxperience.dto.response.ExperienceSummaryResponse;
+import com.ruralxperience.dto.response.HostProfileResponse;
+import com.ruralxperience.dto.response.PageResponse;
+import com.ruralxperience.dto.response.PhotoResponse;
+import com.ruralxperience.entity.Category;
+import com.ruralxperience.entity.DailyAgendaItem;
+import com.ruralxperience.entity.Experience;
+import com.ruralxperience.entity.ExperiencePhoto;
+import com.ruralxperience.entity.HostProfile;
 import com.ruralxperience.enums.ExperienceStatus;
 import com.ruralxperience.exception.ForbiddenException;
 import com.ruralxperience.exception.ResourceNotFoundException;
 import com.ruralxperience.mapper.ExperienceMapper;
 import com.ruralxperience.mapper.HostProfileMapper;
-import com.ruralxperience.repository.*;
+import com.ruralxperience.repository.CategoryRepository;
+import com.ruralxperience.repository.ExperienceRepository;
+import com.ruralxperience.repository.ExperienceSpecification;
+import com.ruralxperience.repository.HostProfileRepository;
+import com.ruralxperience.repository.PhotoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +49,7 @@ public class ExperienceService {
     private final ExperienceMapper experienceMapper;
     private final StorageService storageService;
     private final HostProfileMapper hostProfileMapper;
+    private final PhotoRepository photoRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<ExperienceSummaryResponse> search(
@@ -69,7 +84,7 @@ public class ExperienceService {
     }
 
     @Transactional
-    public ExperienceResponse create(CreateExperienceRequest request, Long userId) {
+    public ExperienceResponse create(CreateExperienceRequest request, Long userId, List<MultipartFile> files) {
         HostProfile host = hostProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("HostProfile for user", userId));
         Category category = categoryRepository.findById(request.categoryId())
@@ -92,6 +107,29 @@ public class ExperienceService {
                         .build();
                 exp.getAgendaItems().add(item);
             });
+        }
+
+        if (files != null && !files.isEmpty()) {
+            for (int i = 0; i < files.size(); i++) {
+                MultipartFile file = files.get(i);
+
+                // Upload to storage
+                String imageUrl = storageService.store(file);
+
+                ExperiencePhoto photo = ExperiencePhoto.builder()
+                        .experience(exp)
+                        .url(imageUrl)
+                        .altText(exp.getTitle() + " - Image " + (i + 1))
+                        .sortOrder(i) // Maintains the order from the UI
+                        .build();
+
+                exp.getPhotos().add(photo);
+
+                // Automatically set the first photo as the cover photo
+                if (i == 0) {
+                    exp.setCoverPhotoUrl(imageUrl);
+                }
+            }
         }
 
         return experienceMapper.toResponse(experienceRepository.save(exp));
@@ -189,6 +227,51 @@ public class ExperienceService {
 
         experienceRepository.save(exp);
         return experienceMapper.toPhotoResponse(photo);
+    }
+
+    @Transactional
+    public List<PhotoResponse> uploadPhotos(Long experienceId, List<MultipartFile> files, Long userId) {
+        // 1. Verify experience ownership
+        Experience experience = experienceRepository.findById(experienceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Experience not found"));
+
+        if (!experience.getHost().getId().equals(userId)) {
+            throw new AccessDeniedException("You do not own this experience");
+        }
+
+        // 2. Getting current max sort order to append new photos at the end
+        int currentMaxOrder = experience.getPhotos().stream()
+                .mapToInt(ExperiencePhoto::getSortOrder)
+                .max()
+                .orElse(-1);
+
+        // 3. Process each file
+        List<ExperiencePhoto> newPhotos = new ArrayList<>();
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+
+            // Store
+            String imageUrl = storageService.store(file);
+
+            ExperiencePhoto photo = ExperiencePhoto.builder()
+                    .experience(experience)
+                    .url(imageUrl)
+                    .altText(experience.getTitle() + " photo " + (currentMaxOrder + i + 2))
+                    .sortOrder(currentMaxOrder + i + 1)
+                    .build();
+
+            newPhotos.add(photoRepository.save(photo));
+        }
+
+        // 4. Map to DTOs
+        return newPhotos.stream()
+                .map(photo -> new PhotoResponse(
+                        photo.getId(),
+                        photo.getUrl(),
+                        photo.getAltText(),
+                        photo.getSortOrder(),
+                        photo.getUploadedAt()))
+                .toList();
     }
 
     @Transactional

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rxp-app
+  namespace: ruralxperience
+  labels:
+    app: rxp-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rxp-app
+  template:
+    metadata:
+      labels:
+        app: rxp-app
+    spec:
+      containers:
+        - name: rxp-app
+          image: ayoubtec/rxp-api:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: rxp-config
+            - secretRef:
+                name: rxp-secret
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
