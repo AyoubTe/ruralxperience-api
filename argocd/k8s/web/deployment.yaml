@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: rxp-web
-          image: ayoubtec/rxp-web:latest
+          image: ayoubtec/rxp-web:1.0
           ports:
             - containerPort: 80
           readinessProbe:

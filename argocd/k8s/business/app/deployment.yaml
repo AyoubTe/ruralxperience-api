@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rxp-app
+  name: rxp-api
   namespace: ruralxperience
   labels:
     app: rxp-app
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: rxp-app
-          image: ayoubtec/rxp-api:latest
+          image: ayoubtec/rxp-api:1.0
           ports:
             - containerPort: 8080
           envFrom:
