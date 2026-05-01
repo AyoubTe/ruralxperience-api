@@ -1,22 +1,5 @@
 
-CREATE TABLE audit_logs (
-                            id           BIGSERIAL PRIMARY KEY,
-                            admin_id     BIGINT        NOT NULL,
-                            admin_email  VARCHAR(255)  NOT NULL,
-                            action       VARCHAR(100)  NOT NULL,
-                            entity_type  VARCHAR(50)   NOT NULL,
-                            entity_id    BIGINT,
-                            details      TEXT,
-                            ip_address   VARCHAR(45),
-                            created_at   TIMESTAMP     NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_audit_admin      ON audit_logs(admin_id);
-CREATE INDEX idx_audit_entity     ON audit_logs(entity_type, entity_id);
-CREATE INDEX idx_audit_action     ON audit_logs(action);
-CREATE INDEX idx_audit_created_at ON audit_logs(created_at DESC);
-
--- ── Sample data ───────────────────────────────────────────────────
+-- ── Audit logs ───────────────────────────────────────────────────
 
 INSERT INTO audit_logs (admin_id, admin_email, action, entity_type, entity_id, details, ip_address) VALUES
                                                                                                         (1, 'admin@ruralxperience.com', 'EXPERIENCE_APPROVED',  'Experience', 1,  'Approved: Lavender Harvest in Provence',        '192.168.1.1'),

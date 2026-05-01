@@ -18,6 +18,7 @@ spec:
       containers:
         - name: rxp-app
           image: ayoubtec/rxp-api:1.0
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
