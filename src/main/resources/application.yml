@@ -116,9 +116,9 @@ app:
     local-dir: ${STORAGE_LOCAL_DIR:uploads}
     s3-bucket: ${S3_BUCKET:ruralxperience-media}
     s3-region: ${S3_REGION:eu-west-3}
-    cdn-base-url: ${CDN_BASE_URL:http://localhost:8080/files}
+    cdn-base-url: ${CDN_BASE_URL:http://rxp-api-svc:8080/files}
   email:
     enabled: ${EMAIL_ENABLED:true}
     from: ${EMAIL_FROM:noreply@ruralxperience.com}
     from-name: RuralXperience
-  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+  frontend-url: ${FRONTEND_URL:http://rxp-web-svc:4200}
