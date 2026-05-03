@@ -164,4 +164,6 @@ CREATE INDEX idx_notification_user       ON notifications(user_id);
 CREATE INDEX idx_notification_read       ON notifications(is_read);
 CREATE INDEX idx_audit_admin             ON audit_logs(admin_id);
 CREATE INDEX idx_audit_entity            ON audit_logs(entity_type, entity_id);
+CREATE INDEX idx_audit_action            ON audit_logs(action);
+CREATE INDEX idx_audit_created_at        ON audit_logs(created_at DESC);
 CREATE INDEX idx_review_experience       ON reviews(experience_id);

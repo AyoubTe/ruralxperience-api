@@ -8,7 +8,6 @@ import com.ruralxperience.entity.Experience;
 import com.ruralxperience.entity.User;
 import com.ruralxperience.enums.BookingStatus;
 import com.ruralxperience.enums.ExperienceStatus;
-import com.ruralxperience.enums.NotificationType;
 import com.ruralxperience.event.BookingStatusChangedEvent;
 import com.ruralxperience.exception.BadRequestException;
 import com.ruralxperience.exception.ForbiddenException;

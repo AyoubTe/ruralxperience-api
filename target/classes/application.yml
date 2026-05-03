@@ -4,9 +4,9 @@ spring:
 
   # Database
   datasource:
-    url: ${DB_URL:jdbc:postgresql://172.30.31.126:5432/ruralxperience}
-    username: ${DB_USER:rxp_user}
-    password: ${DB_PASSWORD:rxp_secret}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://172.30.31.126:5432/ruralxperience}
+    username: ${POSTGRES_USER:rxp_user}
+    password: ${POSTGRES_PASSWORD:rxp_secret}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -40,8 +40,8 @@ spring:
   # Redis cache
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       timeout: 2000ms
 
@@ -116,9 +116,9 @@ app:
     local-dir: ${STORAGE_LOCAL_DIR:uploads}
     s3-bucket: ${S3_BUCKET:ruralxperience-media}
     s3-region: ${S3_REGION:eu-west-3}
-    cdn-base-url: ${CDN_BASE_URL:http://localhost:8080/files}
+    cdn-base-url: ${CDN_BASE_URL:http://rxp-api-svc:8080/files}
   email:
     enabled: ${EMAIL_ENABLED:true}
     from: ${EMAIL_FROM:noreply@ruralxperience.com}
     from-name: RuralXperience
-  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+  frontend-url: ${FRONTEND_URL:http://rxp-web-svc:4200}

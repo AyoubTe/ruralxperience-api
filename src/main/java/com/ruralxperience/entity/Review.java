@@ -47,7 +47,7 @@ public class Review {
 
     @Column(name = "is_visible")
     @Builder.Default
-    private boolean visible = true;
+    private Boolean visible = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
