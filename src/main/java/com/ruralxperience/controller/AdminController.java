@@ -15,7 +15,9 @@ import com.ruralxperience.mapper.UserMapper;
 import com.ruralxperience.repository.AuditLogRepository;
 import com.ruralxperience.repository.UserRepository;
 import com.ruralxperience.service.AuditLogService;
+import com.ruralxperience.service.BookingService;
 import com.ruralxperience.service.ExperienceService;
+import com.ruralxperience.service.ReviewService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -39,6 +49,8 @@ public class AdminController {
     private final UserMapper userMapper;
     private final AuditLogRepository auditLogRepository;
     private final AuditLogService auditLogService;
+    private final BookingService bookingService;
+    private final ReviewService reviewService;
 
     // Experience moderation
     @GetMapping("/experiences/pending")
@@ -125,7 +137,12 @@ public class AdminController {
     @GetMapping("/stats")
     public Map<String, Long> getStats() {
         return Map.of(
+            "totalRevenue", bookingService.totalRevenue(),
+            "confirmedBookings", bookingService.confirmedBookings(),
             "totalUsers",       userRepository.count(),
+            "publishedExperiences", experienceService.publishedExperiences(),
+            "totalExperiences", experienceService.totalExperiences(),
+            "pendingReview", experienceService.pendingReview(),
             "totalExplorers",   userRepository.countByRole(Role.EXPLORER),
             "totalHosts",       userRepository.countByRole(Role.HOST),
             "pendingExperiences", experienceService.getByStatus(ExperienceStatus.PENDING_REVIEW,

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -54,4 +55,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.experience.host.id = :hostId " +
            "AND b.status = 'PENDING'")
     long countPendingByHostId(@Param("hostId") Long hostId);
+
+    @Query("SELECT SUM(b.totalPrice) FROM Booking b WHERE b.status = :status")
+    BigDecimal sumTotalPriceByStatus(@Param("status") BookingStatus status);
+
+    List<Booking> findByStatus(BookingStatus status);
 }

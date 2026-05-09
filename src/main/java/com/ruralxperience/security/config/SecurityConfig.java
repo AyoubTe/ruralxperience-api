@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/experiences/**").hasRole("HOST")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/experiences/**").hasRole("HOST")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/experiences/**").hasAnyRole("HOST", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/bookings/*/complete").hasRole("HOST")
                         // Public Experience GETs
                         .requestMatchers(HttpMethod.GET, "/api/v1/experiences/**").permitAll()
 

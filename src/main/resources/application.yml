@@ -107,18 +107,18 @@ management:
 app:
   jwt:
     secret: ${JWT_SECRET:dev-secret-change-in-production-minimum-256-bit-key-here}
-    access-token-expiration: 900000       # 15 minutes
+    access-token-expiration: 10800000     # 3 hours
     refresh-token-expiration: 604800000   # 7 days
   cors:
-    allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200} # for vite : http://localhost:4173
   storage:
     type: ${STORAGE_TYPE:local}           # 'local' or 's3'
     local-dir: ${STORAGE_LOCAL_DIR:uploads}
     s3-bucket: ${S3_BUCKET:ruralxperience-media}
     s3-region: ${S3_REGION:eu-west-3}
-    cdn-base-url: ${CDN_BASE_URL:http://rxp-api-svc:8080/files}
+    cdn-base-url: ${CDN_BASE_URL:http://localhost:8080/files} # http://rxp-api-svc:8080/files
   email:
     enabled: ${EMAIL_ENABLED:true}
     from: ${EMAIL_FROM:noreply@ruralxperience.com}
     from-name: RuralXperience
-  frontend-url: ${FRONTEND_URL:http://rxp-web-svc:4200}
+  frontend-url: ${FRONTEND_URL:http://localhost:4200} # http://rxp-web-svc:4200

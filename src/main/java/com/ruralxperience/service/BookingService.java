@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -160,6 +161,29 @@ public class BookingService {
         return bookingMapper.toResponse(saved);
     }
 
+    @Transactional
+    public BookingResponse markedCompletedByHost(Long bookingId, Long hostUserId) {
+        Booking booking = getHostOwnedBooking(bookingId, hostUserId);
+        assertStatus(booking, BookingStatus.CONFIRMED, "complete");
+
+        // Verify the experience end date has passed
+        LocalDate expectedEndDate = booking.getStartDate()
+                .plusDays(booking.getExperience().getDurationDays());
+
+        if (LocalDate.now().isBefore(expectedEndDate)) {
+            throw new BadRequestException(
+                    "Booking cannot be marked as completed before the experience end date: " + expectedEndDate
+            );
+        }
+
+        booking.setStatus(BookingStatus.COMPLETED);
+        booking.setCompletedAt(LocalDateTime.now());
+        Booking saved = bookingRepository.save(booking);
+        eventPublisher.publishEvent(new BookingStatusChangedEvent(
+                this, saved, BookingStatus.CONFIRMED, BookingStatus.COMPLETED));
+        return bookingMapper.toResponse(saved);
+    }
+
     private Booking getHostOwnedBooking(Long bookingId, Long hostUserId) {
         Booking booking = bookingRepository.findByIdWithAllDetails(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking", bookingId));
@@ -174,5 +198,19 @@ public class BookingService {
             throw new BadRequestException(
                     "Cannot " + action + " booking in status: " + booking.getStatus());
         }
+    }
+
+    public Long totalRevenue() {
+        BigDecimal total = bookingRepository.sumTotalPriceByStatus(BookingStatus.COMPLETED);
+
+        if (total == null) {
+            return 0L;
+        }
+
+        return total.longValue();
+    }
+
+    public Long confirmedBookings() {
+        return bookingRepository.countByStatus(BookingStatus.CONFIRMED);
     }
 }

@@ -76,4 +76,10 @@ public class BookingController {
         String reason = body != null ? body.get("reason") : null;
         return bookingService.cancel(id, user.getId(), reason);
     }
+
+    @PostMapping("/{id}/complete")
+    public BookingResponse completeBooking(@PathVariable Long id,
+                                           @AuthenticationPrincipal User user) {
+        return bookingService.markedCompletedByHost(id, user.getId());
+    }
 }

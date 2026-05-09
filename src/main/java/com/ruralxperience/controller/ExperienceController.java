@@ -92,7 +92,16 @@ public class ExperienceController {
     }
 
     @GetMapping("/{id}")
-    public ExperienceResponse getById(@PathVariable Long id) {
+    public ExperienceResponse getById(@PathVariable Long id, @AuthenticationPrincipal User user) {
+
+        if (user != null && "ADMIN".equals(user.getRole().name())) {
+            return experienceService.getExperienceForAdminPreview(id);
+        }
+
+        if (user != null && "HOST".equals(user.getRole().name())) {
+            return experienceService.getHostPendingReviewExperience(id, user.getId());
+        }
+
         return experienceService.getById(id);
     }
 
@@ -103,6 +112,13 @@ public class ExperienceController {
                                      @RequestPart("files") List<MultipartFile> files,
                                      @AuthenticationPrincipal User user) {
         return experienceService.create(request, user.getId(), files);
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ExperienceResponse createJsonOnly(@Valid @RequestBody CreateExperienceRequest request,
+                                             @AuthenticationPrincipal User user) {
+        return experienceService.create(request, user.getId(), new java.util.ArrayList<>());
     }
 
     @PutMapping("/{id}")
@@ -152,12 +168,30 @@ public class ExperienceController {
         return experienceService.uploadPhoto(id, file, user.getId());
     }
 
-    @PostMapping("/{id}/photos")
+    @PostMapping(value = "/{id}/cover-photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public Map<String, String> uploadCoverPhoto(@PathVariable Long id,
+                                                @RequestPart("file") MultipartFile file,
+                                                @AuthenticationPrincipal User user) {
+        String url = experienceService.uploadCoverPhoto(id, file, user.getId());
+        return Map.of("coverPhotoUrl", url);
+    }
+
+//    @PostMapping("/{id}/photos")
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public List<PhotoResponse> uploadPhotos(@PathVariable Long id,
+//                                            @RequestParam("files") List<MultipartFile> files,
+//                                            @AuthenticationPrincipal User user) {
+//        // We now return a List<PhotoResponse> instead of a single one
+//        return experienceService.uploadPhotos(id, files, user.getId());
+//    }
+
+    @PostMapping(value = "/{id}/photos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public List<PhotoResponse> uploadPhotos(@PathVariable Long id,
-                                            @RequestParam("files") List<MultipartFile> files,
+                                            @RequestPart("files") List<MultipartFile> files,
                                             @AuthenticationPrincipal User user) {
-        // We now return a List<PhotoResponse> instead of a single one
+
         return experienceService.uploadPhotos(id, files, user.getId());
     }
 

@@ -74,6 +74,26 @@ public class ExperienceService {
     }
 
     @Transactional(readOnly = true)
+    public ExperienceResponse getExperienceForAdminPreview(Long id) {
+        Experience exp = experienceRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Experience", id));
+
+        return experienceMapper.toResponse(exp);
+    }
+
+    @Transactional(readOnly = true)
+    public ExperienceResponse getHostPendingReviewExperience(Long id, Long userId) {
+        Experience exp = experienceRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Experience", id));
+
+        if (!exp.getHost().getUser().getId().equals(userId)) {
+            throw new ForbiddenException("Not your experience");
+        }
+
+        return experienceMapper.toResponse(exp);
+    }
+
+    @Transactional(readOnly = true)
     public ExperienceResponse getByIdForHost(Long id, Long userId) {
         Experience exp = experienceRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Experience", id));
@@ -230,12 +250,36 @@ public class ExperienceService {
     }
 
     @Transactional
-    public List<PhotoResponse> uploadPhotos(Long experienceId, List<MultipartFile> files, Long userId) {
-        // 1. Verify experience ownership
-        Experience experience = experienceRepository.findById(experienceId)
+    public String uploadCoverPhoto(Long experienceId, MultipartFile file, Long userId) {
+        Experience experience = experienceRepository.findByIdWithDetails(experienceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Experience not found"));
 
-        if (!experience.getHost().getId().equals(userId)) {
+        if (!experience.getHost().getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("You do not own this experience");
+        }
+
+        // Store the file
+        String imageUrl = storageService.store(file);
+
+        // Directly update the DB column
+        experience.setCoverPhotoUrl(imageUrl);
+        experienceRepository.save(experience);
+
+        return imageUrl;
+    }
+
+    @Transactional
+    public List<PhotoResponse> uploadPhotos(Long experienceId, List<MultipartFile> files, Long userId) {
+
+        if (files.size() > 10) {
+            throw new IllegalArgumentException("Maximum of 10 gallery photos allowed.");
+        }
+
+        // 1. Verify experience ownership
+        Experience experience = experienceRepository.findByIdWithDetails(experienceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Experience not found"));
+
+        if (!experience.getHost().getUser().getId().equals(userId)) {
             throw new AccessDeniedException("You do not own this experience");
         }
 
@@ -253,11 +297,16 @@ public class ExperienceService {
             // Store
             String imageUrl = storageService.store(file);
 
+            // Extract the filename/key from the end of the URL
+            String fileKey = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+
             ExperiencePhoto photo = ExperiencePhoto.builder()
                     .experience(experience)
                     .url(imageUrl)
+                    .storageKey(fileKey)
                     .altText(experience.getTitle() + " photo " + (currentMaxOrder + i + 2))
                     .sortOrder(currentMaxOrder + i + 1)
+                    .uploadedAt(LocalDateTime.now())
                     .build();
 
             newPhotos.add(photoRepository.save(photo));
@@ -356,5 +405,17 @@ public class ExperienceService {
         HostProfile host = experienceRepository.findHostByExperienceId(experienceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Host for experience", experienceId));
         return hostProfileMapper.toResponse(host);
+    }
+
+    public Long publishedExperiences() {
+        return experienceRepository.countByStatus(ExperienceStatus.PUBLISHED);
+    }
+
+    public Long totalExperiences() {
+        return experienceRepository.count();
+    }
+
+    public Long pendingReview() {
+        return experienceRepository.countByStatus(ExperienceStatus.PENDING_REVIEW);
     }
 }
