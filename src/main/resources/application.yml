@@ -110,7 +110,7 @@ app:
     access-token-expiration: 10800000     # 3 hours
     refresh-token-expiration: 604800000   # 7 days
   cors:
-    allowed-origins: ${CORS_ORIGINS:http://localhost:4200} # for vite : http://localhost:4173
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200,http://localhost:4173} # for vite : http://localhost:4173
   storage:
     type: ${STORAGE_TYPE:local}           # 'local' or 's3'
     local-dir: ${STORAGE_LOCAL_DIR:uploads}

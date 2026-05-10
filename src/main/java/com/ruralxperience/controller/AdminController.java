@@ -2,6 +2,8 @@ package com.ruralxperience.controller;
 
 import com.ruralxperience.dto.request.ModerationAction;
 import com.ruralxperience.dto.response.AuditLogResponse;
+import com.ruralxperience.dto.response.BookingResponse;
+import com.ruralxperience.dto.response.CategoryResponse;
 import com.ruralxperience.dto.response.ExperienceSummaryResponse;
 import com.ruralxperience.dto.response.PageResponse;
 import com.ruralxperience.dto.response.UserResponse;
@@ -16,6 +18,7 @@ import com.ruralxperience.repository.AuditLogRepository;
 import com.ruralxperience.repository.UserRepository;
 import com.ruralxperience.service.AuditLogService;
 import com.ruralxperience.service.BookingService;
+import com.ruralxperience.service.CategoryService;
 import com.ruralxperience.service.ExperienceService;
 import com.ruralxperience.service.ReviewService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,10 +30,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,6 +56,7 @@ public class AdminController {
     private final AuditLogService auditLogService;
     private final BookingService bookingService;
     private final ReviewService reviewService;
+    private final CategoryService categoryService;
 
     // Experience moderation
     @GetMapping("/experiences/pending")
@@ -134,6 +140,19 @@ public class AdminController {
         userRepository.save(user);
     }
 
+    @DeleteMapping("/users/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
+
+        userRepository.delete(user);
+
+        auditLogService.log(null, "SYSTEM",
+                "USER_DELETED", "User", id,
+                "User deleted by admin", "AdminPanel");
+    }
+
     @GetMapping("/stats")
     public Map<String, Long> getStats() {
         return Map.of(
@@ -167,6 +186,17 @@ public class AdminController {
         )));
     }
 
+    @GetMapping("/bookings")
+    public PageResponse<BookingResponse> getAllBookings(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return bookingService.getAllBookingsForAdmin(status, q, pageable);
+    }
+
     @PatchMapping("/users/{id}/role")
     public UserResponse updateUserRole(@PathVariable Long id,
                                        @RequestBody Map<String, String> body) {
@@ -187,4 +217,21 @@ public class AdminController {
         userRepository.save(user);
     }
 
+    // --- CATEGORY MANAGEMENT ---
+    @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CategoryResponse createCategory(@RequestBody Map<String, String> request) {
+        return categoryService.createCategory(request);
+    }
+
+    @PutMapping("/categories/{id}")
+    public CategoryResponse updateCategory(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        return categoryService.updateCategory(id, request);
+    }
+
+    @DeleteMapping("/categories/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+    }
 }

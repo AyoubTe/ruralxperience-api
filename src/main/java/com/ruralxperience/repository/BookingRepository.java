@@ -60,4 +60,20 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     BigDecimal sumTotalPriceByStatus(@Param("status") BookingStatus status);
 
     List<Booking> findByStatus(BookingStatus status);
+
+    Page<Booking> findByStatus(BookingStatus status, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b WHERE " +
+            "LOWER(b.experience.title) LIKE %:query% OR " +
+            "LOWER(b.explorer.firstName) LIKE %:query% OR " +
+            "LOWER(b.explorer.lastName) LIKE %:query% OR " +
+            "LOWER(b.explorer.email) LIKE %:query%")
+    Page<Booking> searchAll(@Param("query") String query, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b WHERE b.status = :status AND (" +
+            "LOWER(b.experience.title) LIKE %:query% OR " +
+            "LOWER(b.explorer.firstName) LIKE %:query% OR " +
+            "LOWER(b.explorer.lastName) LIKE %:query% OR " +
+            "LOWER(b.explorer.email) LIKE %:query%)")
+    Page<Booking> searchAllWithStatus(@Param("query") String query, @Param("status") BookingStatus status, Pageable pageable);
 }

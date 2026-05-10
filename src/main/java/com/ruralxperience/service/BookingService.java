@@ -184,6 +184,23 @@ public class BookingService {
         return bookingMapper.toResponse(saved);
     }
 
+    @Transactional
+    public PageResponse<BookingResponse> getAllBookingsForAdmin(String status, String query, Pageable pageable) {
+        Page<Booking> bookings;
+
+        if (query != null && !query.isBlank() && status != null && !status.equals("ALL")) {
+            bookings = bookingRepository.searchAllWithStatus(query.toLowerCase(), BookingStatus.valueOf(status), pageable);
+        } else if (query != null && !query.isBlank()) {
+            bookings = bookingRepository.searchAll(query.toLowerCase(), pageable);
+        } else if (status != null && !status.equals("ALL")) {
+            bookings = bookingRepository.findByStatus(BookingStatus.valueOf(status), pageable);
+        } else {
+            bookings = bookingRepository.findAll(pageable);
+        }
+
+        return PageResponse.from(bookings.map(bookingMapper::toResponse));
+    }
+
     private Booking getHostOwnedBooking(Long bookingId, Long hostUserId) {
         Booking booking = bookingRepository.findByIdWithAllDetails(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking", bookingId));

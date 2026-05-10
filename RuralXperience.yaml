@@ -1,0 +1,169 @@
+openapi: 3.1.0
+info:
+  title: RuralXperience API
+  version: "1.0"
+  description: API documentation for RuralXperience
+servers:
+  - url: "{{API_BASE_URL}}"
+    description: Base URL from Bruno Environment
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '200':
+          description: OK
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, example: "new@example.com" }
+                password: { type: string, example: "securePass!" }
+                firstName: { type: string, example: "Alice" }
+                lastName: { type: string, example: "Smith" }
+                role: { type: string, example: "EXPLORER" }
+      responses:
+        '201':
+          description: Created
+  /api/v1/experiences:
+    get:
+      tags:
+        - Experiences
+      summary: Get all experiences
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, default: 12 }
+      responses:
+        '200':
+          description: OK
+    post:
+      tags:
+        - Experiences
+      summary: Create experience
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                request:
+                  type: string
+                  example: '{"title":"Farm Tour","shortDescription":"A cool tour","pricePerPerson":50,"durationDays":1,"maxGuests":4,"categoryId":1}'
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Created
+  /api/v1/experiences/{id}:
+    get:
+      tags:
+        - Experiences
+      summary: Get experience by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+  /api/v1/bookings:
+    post:
+      tags:
+        - Bookings
+      summary: Create a booking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                experienceId: { type: integer, example: 1 }
+                startDate: { type: string, example: "2026-05-20" }
+                endDate: { type: string, example: "2026-05-21" }
+                numberOfGuests: { type: integer, example: 2 }
+                specialRequests: { type: string, example: "Vegan meals please" }
+      responses:
+        '201':
+          description: Created
+  /api/v1/bookings/my:
+    get:
+      tags:
+        - Bookings
+      summary: Get my bookings
+      responses:
+        '200':
+          description: OK
+  /api/v1/wishlist/{experienceId}:
+    post:
+      tags:
+        - Wishlist
+      summary: Add to wishlist
+      parameters:
+        - name: experienceId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '201':
+          description: Created
+    delete:
+      tags:
+        - Wishlist
+      summary: Remove from wishlist
+      parameters:
+        - name: experienceId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: No Content
+  /api/v1/categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      responses:
+        '200':
+          description: OK

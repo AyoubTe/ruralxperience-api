@@ -1,0 +1,253 @@
+{
+  "info": {
+    "name": "RuralXperience API",
+    "description": "Generated API Collection with automated JWT injection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "API_BASE_URL", "value": "http://13.56.227.126:8080", "type": "string" },
+    { "key": "JWT_TOKEN", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{JWT_TOKEN}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.accessToken) {",
+                  "    pm.environment.set(\"JWT_TOKEN\", jsonData.accessToken);",
+                  "    console.log(\"Token automatically set in environment!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}" },
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/auth/login", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"new@example.com\",\n  \"password\": \"securePass!\",\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Smith\",\n  \"role\": \"EXPLORER\"\n}" },
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/auth/register", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"string\"\n}" },
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/auth/refresh", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "auth", "refresh"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Experiences",
+      "item": [
+        {
+          "name": "Get All Experiences",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/experiences?page=0&size=12", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "experiences"], "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "12" }] }
+          }
+        },
+        {
+          "name": "Get Experience by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/experiences/1", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "experiences", "1"] }
+          }
+        },
+        {
+          "name": "Create Experience",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "multipart/form-data" }],
+            "body": { "mode": "formdata", "formdata": [{ "key": "request", "value": "{\"title\":\"Farm Tour\",\"shortDescription\":\"A cool tour\",\"pricePerPerson\":50,\"durationDays\":1,\"maxGuests\":4}", "type": "text" }, { "key": "files", "type": "file", "src": [] }] },
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/experiences", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "experiences"] }
+          }
+        },
+        {
+          "name": "Update Experience",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated Title\",\n  \"shortDescription\": \"Updated description that meets length requirements\",\n  \"pricePerPerson\": 60,\n  \"durationDays\": 2,\n  \"maxGuests\": 5\n}" },
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/experiences/1", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "experiences", "1"] }
+          }
+        },
+        {
+          "name": "Submit Experience for Review",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/experiences/1/submit", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "experiences", "1", "submit"] }
+          }
+        },
+        {
+          "name": "Host Experiences",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/experiences/host-experiences", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "experiences", "host-experiences"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"experienceId\": 1,\n  \"startDate\": \"2026-05-20\",\n  \"endDate\": \"2026-05-21\",\n  \"numberOfGuests\": 2,\n  \"specialRequests\": \"Vegan meals please\"\n}" },
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/bookings", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "bookings"] }
+          }
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/bookings/my", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "bookings", "my"] }
+          }
+        },
+        {
+          "name": "Get Host Bookings",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/bookings/host", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "bookings", "host"] }
+          }
+        },
+        {
+          "name": "Confirm Booking",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/bookings/1/confirm", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "bookings", "1", "confirm"] }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/bookings/1/cancel", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "bookings", "1", "cancel"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wishlist",
+      "item": [
+        {
+          "name": "Get Wishlist",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/wishlist", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "wishlist"] }
+          }
+        },
+        {
+          "name": "Add to Wishlist",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/wishlist/1", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "wishlist", "1"] }
+          }
+        },
+        {
+          "name": "Remove from Wishlist",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/wishlist/1", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "wishlist", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"bookingId\": 1,\n  \"rating\": 5,\n  \"comment\": \"Amazing experience!\"\n}" },
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/reviews", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "reviews"] }
+          }
+        },
+        {
+          "name": "Host Reply",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reply\": \"Thank you for coming!\"\n}" },
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/reviews/1/reply", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "reviews", "1", "reply"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/admin/users", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Get Pending Experiences",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/admin/experiences/pending", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "admin", "experiences", "pending"] }
+          }
+        },
+        {
+          "name": "Approve Experience",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/admin/experiences/1/approve", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "admin", "experiences", "1", "approve"] }
+          }
+        },
+        {
+          "name": "Admin Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/admin/stats", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "admin", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{API_BASE_URL}}/api/v1/categories", "host": ["{{API_BASE_URL}}"], "path": ["api", "v1", "categories"] }
+          }
+        }
+      ]
+    }
+  ]
+}
